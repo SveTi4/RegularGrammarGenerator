@@ -3,32 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deterministic Finite Automaton</title>
+    <title>DFA Visualizer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+<style>
+    .node circle {
+        fill: steelblue;
+        stroke: black;
+        stroke-width: 1.5px;
+    }
+    .node circle:hover {
+        fill: #7bff00;
+    }
+
+    .node text {
+        font: 12px sans-serif;
+    }
+    .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 1.5px;
+    }
+    #tree {
+        width: 100vw;
+        height: 100vh;
+        overflow: scroll;
+        background: #686868;
+    }
+</style>
 <body>
-<header>
-    <h1>Детерминированный Конечный Автомат</h1>
-    <nav>
-        <button onclick="showAuthor()">Автор</button>
-        <button onclick="showTopic()">Тема</button>
-        <button onclick="selectInputMethod()">Данные</button>
-        <button onclick="startCalculation()">Расчёты</button>
-        <button onclick="saveResults()">Запись результатов</button>
-        <button onclick="showHelp()">Справка</button>
-    </nav>
-</header>
+<h1>DFA Visualizer</h1>
+<nav>
+    <ul>
+        <li><button onclick="showAuthorInfo()">Автор</button></li>
+        <li><button onclick="showTopicInfo()">Тема</button></li>
+        <li>
+            Данные
+            <ul>
+                <li><button onclick="setDataInputMethod('keyboard')">Ввод с клавиатуры</button></li>
+                <li><button onclick="setDataInputMethod('file')">Чтение из файла</button></li>
+            </ul>
+        </li>
+        <li><button onclick="performCalculations()">Расчёты</button></li>
+        <li><button onclick="saveResults()">Запись результатов</button></li>
+    </ul>
+</nav>
+<div id="content">
+    <p>Выберите действие из меню.</p>
+</div>
+<div id="tree"></div>
+<script src="Grammar.js"></script>
+<script src="renderer.js"></script> <!-- Подключение внизу -->
+<script>
+  console.log(data)
+  // Размеры и маргина графика
+  const width = 1000, height = 2160;
+  const margin = { top: 20, right: 120, bottom: 20, left: 120 };
 
-<main>
-    <div id="content">
-        <p>Добро пожаловать! Выберите действие из меню.</p>
-    </div>
-</main>
+  // Создание SVG
+  const svg = d3.select("#tree").append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-<footer>
-    <p>Разработано Милордом</p>
-</footer>
+  // Дерево и диагональные линии
+  const tree = d3.tree().size([height, width]);
+  const root = d3.hierarchy(data, d => d.branches);
 
-<script src="renderer.js"></script>
+  tree(root);
+
+  // Линки
+  svg.selectAll(".link")
+    .data(root.links())
+    .enter().append("path")
+    .attr("class", "link")
+    .attr("d", d3.linkHorizontal()
+      .x(d => d.y)
+      .y(d => d.x)
+    );
+
+  // Узлы
+  const node = svg.selectAll(".node")
+    .data(root.descendants())
+    .enter().append("g")
+    .attr("class", "node")
+    .attr("transform", d => `translate(${d.y},${d.x})`);
+
+  node.append("circle")
+    .attr("r", 6);
+
+  node.append("text")
+    .attr("dy", 3)
+    .attr("x", d => d.children ? -12 : 12)
+    .style("text-anchor", d => d.children ? "end" : "start")
+    .text(d => d.data.chain);
+</script>
 </body>
 </html>
