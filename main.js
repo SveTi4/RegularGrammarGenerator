@@ -1,23 +1,27 @@
 const { app, BrowserWindow } = require('electron');
 
-function createWindow() {
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+let mainWindow;
+
+app.on('ready', () => {
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
     webPreferences: {
-      preload: __dirname + '/renderer.js',
+      nodeIntegration: true, // Если вы планируете использовать Node.js в рендере
     },
   });
 
   mainWindow.loadFile('index.html');
-}
-
-app.on('ready', createWindow);
+});
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
